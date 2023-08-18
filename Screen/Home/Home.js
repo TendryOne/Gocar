@@ -20,7 +20,8 @@ const Home = () => {
             drawerActiveTintColor : 'white',
             drawerInactiveTintColor : 'white',
             drawerActiveBackgroundColor : style.secondary,
-            drawerLabel : 'Listes des vehicules'
+            drawerLabel : 'Listes des vehicules',
+            headerTitle :'Listes des vehicules'
                       
           }}
       />

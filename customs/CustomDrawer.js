@@ -1,28 +1,62 @@
-import { StyleSheet, Text, View, Image, ImageBackground } from 'react-native'
-import React, {useState} from 'react'
+import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity } from 'react-native'
+import React, {useEffect, useState} from 'react'
 import { DrawerContentScrollView , DrawerItemList } from '@react-navigation/drawer'
 import { style } from '../styles'
-import { SimpleLineIcons , FontAwesome, MaterialIcons} from '@expo/vector-icons'
+import { SimpleLineIcons , FontAwesome, MaterialIcons, MaterialCommunityIcons} from '@expo/vector-icons'
 import StarRating from 'react-native-star-rating'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useNavigation } from '@react-navigation/native'
+import { ROUTES } from '../routes'
 
 
 const CustomDrawer = (props) => {
 
     const [rating, setRating] = useState(0);
-
+    const navigation = useNavigation()
+    const [user , setUser] = useState(null)
     const onStarRatingPress = (rating) => {
       setRating(rating);
       // You can also save the rating to a backend or local storage here
     };
+    const GetUser = async()=>{
+        try {
+            const userInStorage = await AsyncStorage.getItem('user')
+            if(userInStorage){
+                const userObject = JSON.parse(userInStorage)
+                setUser(userObject)    
+
+            }
+
+            
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const logout = async ()=>{
+        try {
+            await AsyncStorage.clear()
+            navigation.replace(ROUTES.loginScreen)
+        } catch (error) {
+            
+        }
+        
+    }
+
+    useEffect(()=>{
+        GetUser()
+    }, [])
+
+
   return (
     <>
     <View style={{flex : 1,}}>
         <View style={{ paddingTop : 30, paddingBottom : 30}}>
-            <View style={{ flexDirection : 'row', alignItems : 'center', justifyContent :'space-between'}}>
+            <View style={{ flexDirection : 'column', alignItems : 'center', justifyContent :'center'}}>
                     <Image source={require('./../public/images/default.jpg')} style={styles.image}/>
                 <View style={{marginRight : 10}}>
-                <Text style={{color : 'black'}}><Text style={{color : style.secondary , fontWeight : 'bold', fontSize : 20}}>R</Text>ANAIVOSON</Text>
-                <Text style={{color : 'black'}}>Alain Tendry Nomena</Text>
+                <Text style={{color : 'black' , fontWeight :'bold', alignSelf : 'center'}}><Text style={{color : style.secondary , fontWeight : 'bold', fontSize : 20}}>{user ? user.name[0] : 'D'}</Text>{user ? user.name.slice(1) : 'efault'}</Text>
+                <Text style={{color : 'black' , alignSelf : 'center' , fontWeight :'bold'}}>{user ? user.firstName : 'user'}</Text>
                 </View>   
             </View>   
             <View style={{flexDirection : 'row' ,justifyContent : 'space-around', marginTop : 20}}>
@@ -32,7 +66,7 @@ const CustomDrawer = (props) => {
                 </View>
                 <View style={styles.statusBar}>
                     <Text style={{color : "white" , fontWeight : 'bold'}}>Role</Text>
-                    <Text style={{color : style.secondary , fontWeight : 'bold'}}>Client</Text>
+                    <Text style={{color : style.secondary , fontWeight : 'bold'}}>{user ? user.role : 'client'}</Text>
                 </View>
                 <View style={styles.statusBar}>
                       <Text style={{color : "white" , fontWeight : 'bold'}}>Statut</Text>
@@ -50,7 +84,13 @@ const CustomDrawer = (props) => {
             <View style={{color : 'black'  , margin : 10, padding : 10, borderRadius : 2, flexDirection : 'row', alignItems : 'center'}}>
             <MaterialIcons name="bug-report" size={24} color="black" /> 
             <Text style={{color : 'black' ,fontWeight : 500 , marginLeft : 20}}> Signaler un bug</Text>
-            </View>       
+            </View> 
+            <TouchableOpacity onPress={logout}>
+            <View style={{color : 'black'  , margin : 10, padding : 10, borderRadius : 2, flexDirection : 'row', alignItems : 'center'}}>
+            <MaterialCommunityIcons name="logout" size={24} color="black" />
+            <Text style={{color : 'black' ,fontWeight : 500 , marginLeft : 20}}> Se deconnecter</Text>
+            </View>    
+            </TouchableOpacity>   
     </View>
 
     </View>

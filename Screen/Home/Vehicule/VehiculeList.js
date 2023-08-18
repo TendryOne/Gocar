@@ -6,16 +6,22 @@ import { Portal, PaperProvider, Button, Searchbar , RadioButton, Modal} from 're
 import { useNavigation } from '@react-navigation/native'
 import { ROUTES } from '../../../routes'
 import { style } from '../../../styles'
-import { MaterialIcons , MaterialCommunityIcons , AntDesign} from '@expo/vector-icons'
+import { MaterialIcons , MaterialCommunityIcons , AntDesign, Ionicons} from '@expo/vector-icons'
+import Slider from '@react-native-community/slider'
 
 
 const VehiculeList = () => {
-    const [isModalVisible, setModalVisible] = useState(true)
+    const [isModalVisible, setModalVisible] = useState(false)
     const [visible, setVisible] = useState(true);
     const navigation = useNavigation()
     const [vehicule , setVehicule] = useState([])
-    const [searchQuery , SetSearchQuery] = useState(null)
+    const [searchQuery , SetSearchQuery] = useState('')
     const [selectedFilter, setSelectedFilter] = useState(false)
+    const [priceQuery , setPriceQuery] = useState(5000000)
+    const [seatsQuery, setSeatsQuery] = useState(50)
+    const [categoryQuery , setCategoryQuery] = useState('Tous')
+    
+    
 
     // this is the head modal of the error
     const hideModal = () => {
@@ -24,18 +30,23 @@ const VehiculeList = () => {
     };
     const containerStyle = {backgroundColor: 'white', padding: 20, margin : 50, height : 150, alignItems: 'center'};
     const [error, setError] = useState('')
-    const fetchData = async (query, price)=>{
 
-      SetSearchQuery(query)
-      if(selectedFilter){
-        price = ''
-      }
+    const ResetFilter = ()=>{
+      setCategoryQuery('Tous')
+      setSeatsQuery(50)
+      setPriceQuery(5000000)
+      SetSearchQuery('')
+    }
+
+    const fetchData = async ()=>{
       try {
         const token = await AsyncStorage.getItem('token')
         response = await axios.get(`http://192.168.88.3:3000/api/vehicle`, {
           params : {
-            search : query,
-            price : price,
+            search : searchQuery,
+            price : priceQuery  ,
+            capacity : seatsQuery,
+            category : categoryQuery
           },
           headers: {
               'Authorization': `Bearer ${token}`,
@@ -57,17 +68,22 @@ const VehiculeList = () => {
 
     useEffect(()=>{
       fetchData()
-    }, [])
-    const handleFilterChange = (value) => {
-      setSelectedFilter(value);
-      setModalVisible(false);
-    };
+    }, [searchQuery, priceQuery, seatsQuery, categoryQuery])
+
 
 
   return (
     <>
 { vehicule && (  
   <>
+
+      {(searchQuery !== '' || priceQuery !== 5000000 || categoryQuery !== 'Tous' || seatsQuery !== 50) && (
+                      <TouchableOpacity onPress={ResetFilter} style={{position : 'absolute' , zIndex : 1 , bottom : 30, right : 30 , backgroundColor : style.secondary , padding : 10 , borderRadius : 50}}>
+                      <MaterialCommunityIcons name="filter-off" size={30} color="black"  />
+                      </TouchableOpacity>
+      )}
+      
+        
                 <View style={{flexDirection : 'row', alignItems : 'center'}}>
 
 
@@ -75,26 +91,27 @@ const VehiculeList = () => {
                     placeholder='search here'
                     iconColor={style.secondary}
                     value={searchQuery}
-                    onChangeText={fetchData}
+                    onChangeText={(value)=> SetSearchQuery(value)}
                     style={{
                       marginTop : 10,
                       backgroundColor : 'white',
                       elevation : 5,
-                      width : '80%'
+                      width : '85%'
                     }}
                   />
-                    <TouchableOpacity onPress={()=> setSelectedFilter(!selectedFilter)}>
+                    <TouchableOpacity onPress={()=> setModalVisible(!isModalVisible)}>
                     <AntDesign name="filter" size={54} color={style.secondary} />
                     </TouchableOpacity>
                       </View>
                   
 <ScrollView style={{flex : 1}}>
 
+ 
                 {
                   vehicule.map(item => {
                     return (
-
-                        <View key={item._id} style={styles.vehiculeContainer}  >
+                      <TouchableOpacity key={item._id} activeOpacity={0.9} >
+                        <View style={styles.vehiculeContainer}  >
                         <Text style={{color : style.secondary, position : 'absolute', top : 5 , right : 5,}}>{item.rent? <MaterialIcons name="car-rental" size={24} color={style.secondary} /> : ''}</Text>
                           <View style={{marginRight : 10}}>
                             <Image source={{uri : item.image}} style={{width : 100, height : 100 , resizeMode : 'contain'}}/>
@@ -108,13 +125,67 @@ const VehiculeList = () => {
                           </View>
                           </View>                        
                         </View>
+                        </TouchableOpacity>
                     )
                   })
                 }      
                 </ScrollView>
                </> 
                 )}
+      <Modal
+        onDismiss={()=> setModalVisible(!isModalVisible)}
+        visible={isModalVisible}
+        style={{flex : 1, justifyContent : 'flex-end', }}
+      >
+        
+        <View style={{backgroundColor : 'white' , height : 500, width :'auto' , borderTopLeftRadius : 40, borderTopRightRadius : 40, }}>
+         
+          <View style={{margin : 20}}>
+          <Text style={{alignSelf : 'center', margin : 10, fontSize : 20, fontWeight : 'bold'}}>Filtre <Ionicons name="filter-sharp" size={24} color="black" /></Text>
+              <View style={{width : '80%', height : 5, backgroundColor : 'gray', alignSelf : 'center', borderRadius : 20, marginBottom : 15}}></View>
+              <ScrollView showsVerticalScrollIndicator={false} style={{height : 400}}>
+          <Text style={{fontWeight : 'bold'}}>Filtre par prix</Text>          
+          <Text>{priceQuery}</Text>
+        <Slider
+                        value={priceQuery}
+                        maximumValue={5000000}
+                        minimumValue={0}
+                        step={100000}
+                        onValueChange={(value)=>setPriceQuery(value) }
+                        maximumTrackTintColor="gray"
+                        minimumTrackTintColor={style.secondary}
+                        thumbTintColor={style.secondary}
+                      
+                      />
+            <Text style={{fontWeight : 'bold'}}>Filtre par sieges</Text>
+            <Text>{seatsQuery}</Text> 
+            <Slider
+                        value={seatsQuery}
+                        maximumValue={50}
+                        minimumValue={1}
+                        step={1}
+                        onValueChange={(value)=>setSeatsQuery(value) }
+                        maximumTrackTintColor="gray"
+                        minimumTrackTintColor={style.secondary}
+                        thumbTintColor={style.secondary}
+                      
+                      /> 
+            <Text style={{fontWeight : 'bold'}}>Filtre par Vehicules</Text>   
+            <View>
+            <RadioButton.Group onValueChange={(value)=> setCategoryQuery(value)} value={categoryQuery}>
+                    <RadioButton.Item label="Tous" value='Tous' />
+                    <RadioButton.Item label="Légères" value='Légères' />
+                    <RadioButton.Item label="4 x 4" value='4 x 4' />
+                    <RadioButton.Item label="Minibus" value='Minibus' />
+                    <RadioButton.Item label="SUV" value='SUV' />
+            </RadioButton.Group>
+            </View>    
+            </ScrollView>   
+        </View>
+
+        </View>      
   
+      </Modal>
 
 
         {error && (
@@ -130,6 +201,7 @@ const VehiculeList = () => {
           </PaperProvider>
           )}
      </>     
+
   )
 }
 

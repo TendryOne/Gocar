@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Text, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { style } from '../../styles'
-import { Button, TextInput } from 'react-native-paper'
+import { Button, TextInput, ActivityIndicator } from 'react-native-paper'
 import { useNavigation } from '@react-navigation/native'
 import { ROUTES } from '../../routes'
 import { useForm , } from 'react-hook-form'
@@ -13,9 +13,11 @@ import { MaterialIcons, Feather } from '@expo/vector-icons'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+
 const Login = () => {
   const [error , setError] = useState('')
   const navigation = useNavigation()
+  const [isLoading , setIsLoading] = useState(true);
   const REQUIRED = 'Ce champ est requis'
   const schema = z.object({
     email : z.string({required_error : REQUIRED}).min(1, REQUIRED),
@@ -24,10 +26,32 @@ const Login = () => {
 
   const { handleSubmit , control, reset } = useForm({resolver : zodResolver(schema)})
 
+  useEffect(()=>{
+    checkLoggedIn()
+  }, [])
+
+  const checkLoggedIn = async()=>{
+    try {
+        const token = await AsyncStorage.getItem('token')
+        if(token){
+          setTimeout(() => {
+            navigation.replace(ROUTES.home)
+          }, 1000); 
+        }else{
+          setIsLoading(false)
+        }
+    } catch (error) {
+        console.log(error)
+    }
+  }
+
+
   const onSubmit = async (data)=>{
     try {
       const response = await axios.post('http://192.168.88.3:3000/api/authentication', data)  
       await AsyncStorage.setItem('token', response.data.token)
+      const user = JSON.stringify(response.data.user)
+      await AsyncStorage.setItem('user', user)
       navigation.replace(ROUTES.home)
     } catch (error) {
       console.log(error)
@@ -36,6 +60,17 @@ const Login = () => {
       }
     }
 
+  }
+
+  if(isLoading){
+    return(
+    
+      <View style={{flex : 1 , alignItems :'center' , justifyContent : 'center'}}>
+          <ActivityIndicator type="small"/>
+          <Text>Chargement de l'utilisateur</Text>
+      </View>
+      
+    )
   }
 
   return (
