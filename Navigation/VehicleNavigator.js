@@ -8,9 +8,11 @@ const Stack = createStackNavigator()
 
 const VehicleNavigator = () => {
   return (
-    <Stack.Navigator initialRouteName={ROUTES.vehiculeListp} screenOptions={{ headerShown : false}}>
+    <Stack.Navigator initialRouteName={ROUTES.vehiculeList} screenOptions={{ headerShown : false}}>
         <Stack.Screen name={ROUTES.vehiculeList} component={VehiculeList}/>
-        <Stack.Screen name={ROUTES.reservationForm} component={ReservationForm}/>
+        <Stack.Screen name={ROUTES.reservationForm} component={ReservationForm} options={{
+          presentation : 'modal'
+        }}/>
     </Stack.Navigator>
   )
 }

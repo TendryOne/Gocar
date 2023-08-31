@@ -12,6 +12,7 @@ import KeyboardAvoidWrapper from '../../customs/KeyboardAvoidWrapper'
 import { MaterialIcons, Feather } from '@expo/vector-icons'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import CustomLoading from '../../customs/CustomLoading'
 
 
 const Login = () => {
@@ -65,10 +66,7 @@ const Login = () => {
   if(isLoading){
     return(
     
-      <View style={{flex : 1 , alignItems :'center' , justifyContent : 'center'}}>
-          <ActivityIndicator type="small"/>
-          <Text>Chargement de l'utilisateur</Text>
-      </View>
+      <CustomLoading text="Chargement de l'utilisateur"/>
       
     )
   }

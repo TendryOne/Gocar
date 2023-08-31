@@ -38,7 +38,7 @@ const CustomDrawer = (props) => {
             await AsyncStorage.clear()
             navigation.replace(ROUTES.loginScreen)
         } catch (error) {
-            
+            console.log(error)
         }
         
     }

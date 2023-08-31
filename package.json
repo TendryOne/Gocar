@@ -20,6 +20,7 @@
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
     "@react-navigation/stack": "^6.3.17",
+    "@reduxjs/toolkit": "^1.9.5",
     "axios": "^1.4.0",
     "expo": "~49.0.7",
     "expo-dev-client": "~2.4.6",
@@ -39,6 +40,7 @@
     "react-native-snap-carousel": "^3.9.1",
     "react-native-star-rating": "^1.1.0",
     "react-native-vector-icons": "^10.0.0",
+    "react-redux": "^8.1.2",
     "zod": "^3.22.1"
   },
   "devDependencies": {

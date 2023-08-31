@@ -11,8 +11,10 @@ const Drawer = createDrawerNavigator()
 
 const Home = () => {
   return (
-    <Drawer.Navigator initialRouteName={ROUTES.Vehicle} drawerContent={props => <CustomDrawer {... props} />}
-      
+    <Drawer.Navigator initialRouteName={ROUTES.Vehicle}  drawerContent={props => <CustomDrawer {... props} /> }
+      screenOptions={{
+        headerShown : false
+      }}
     >
       <Drawer.Screen name={ROUTES.Vehicle} component={VehicleNavigator}
           options={{

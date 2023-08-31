@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity, ImageBackground, StatusBar , FlatList, Keyboard, SafeAreaView, Platform, Pressable} from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -6,8 +6,9 @@ import { Portal, PaperProvider, Button, Searchbar , RadioButton, Modal} from 're
 import { useNavigation } from '@react-navigation/native'
 import { ROUTES } from '../../../routes'
 import { style } from '../../../styles'
-import { MaterialIcons , MaterialCommunityIcons , AntDesign, Ionicons} from '@expo/vector-icons'
+import { MaterialIcons , MaterialCommunityIcons , AntDesign, Ionicons, FontAwesome} from '@expo/vector-icons'
 import Slider from '@react-native-community/slider'
+import PopularVehicle from './PopularVehicle'
 
 
 const VehiculeList = () => {
@@ -16,19 +17,24 @@ const VehiculeList = () => {
     const navigation = useNavigation()
     const [vehicule , setVehicule] = useState([])
     const [searchQuery , SetSearchQuery] = useState('')
-    const [selectedFilter, setSelectedFilter] = useState(false)
     const [priceQuery , setPriceQuery] = useState(5000000)
     const [seatsQuery, setSeatsQuery] = useState(50)
     const [categoryQuery , setCategoryQuery] = useState('Tous')
+
     
     
 
     // this is the head modal of the error
-    const hideModal = () => {
-      navigation.replace(navigation.replace(ROUTES.loginScreen))
-      setVisible(false)
+    const hideModal = async () => {
+      try {
+        await AsyncStorage.clear()
+        setVisible(false)  
+       navigation.replace(ROUTES.loginScreen)
+      } catch (error) {
+          console.log(error)
+      }
     };
-    const containerStyle = {backgroundColor: 'white', padding: 20, margin : 50, height : 150, alignItems: 'center'};
+    const containerStyle = {backgroundColor: 'white', padding: 20, margin : 50, height : 150, alignItems: 'center' };
     const [error, setError] = useState('')
 
     const ResetFilter = ()=>{
@@ -40,7 +46,9 @@ const VehiculeList = () => {
 
     const fetchData = async ()=>{
       try {
-        const token = await AsyncStorage.getItem('token')
+        let response
+        let token = await AsyncStorage.getItem('token')
+        
         response = await axios.get(`http://192.168.88.3:3000/api/vehicle`, {
           params : {
             search : searchQuery,
@@ -54,27 +62,69 @@ const VehiculeList = () => {
             },
         })
         if(response.data.token){
-          AsyncStorage.setItem('token', response.data.token)
+          token = response.data.token
+          console.log('Nouveau Token:', token);
+          await AsyncStorage.setItem('token', token)
+             // utilisation du nouveau Token pour les nouvelle requetes , Bien sur dans le backend elle est configurer a 
+        response = await axios.get(`http://192.168.88.3:3000/api/vehicle`, {
+          params : {
+            search : searchQuery,
+            price : priceQuery  ,
+            capacity : seatsQuery,
+            category : categoryQuery
+          },
+          headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+        })
+
+
+
           setVehicule(response.data.vehicle)
         }
           setVehicule(response.data)
       } catch (error) {
         if(error.response.status === 403){
+          console.log(error.response.data)
           setError(error.response.data)
         }
          
       }
     }
 
+    
+
     useEffect(()=>{
       fetchData()
     }, [searchQuery, priceQuery, seatsQuery, categoryQuery])
 
 
+    const handleReservationForm = (id)=>{
+        const VehiculeToRent = vehicule.filter(vehicule => vehicule._id === id)
+      navigation.navigate(ROUTES.reservationForm, VehiculeToRent)
+    }
+
 
   return (
     <>
-{ vehicule && (  
+
+  <SafeAreaView style={!error ? styles.safeView : ""}>
+    {
+      !error && (
+        <View style={{flexDirection : 'row', justifyContent : 'space-between', padding : 10}}>
+        <Pressable onPress={()=> navigation.openDrawer()}>
+          <FontAwesome name="bars" size={24} color={style.primary} />
+        </Pressable>
+        <Pressable>
+          <Ionicons name="md-notifications-sharp" size={24} color={style.primary} />
+        </Pressable>
+      </View>
+      )
+    }
+   
+
+{ (vehicule && !error) && (  
   <>
 
       {(searchQuery !== '' || priceQuery !== 5000000 || categoryQuery !== 'Tous' || seatsQuery !== 50) && (
@@ -88,7 +138,7 @@ const VehiculeList = () => {
 
 
                     <Searchbar
-                    placeholder='search here'
+                    placeholder='Chercher ici ...'
                     iconColor={style.secondary}
                     value={searchQuery}
                     onChangeText={(value)=> SetSearchQuery(value)}
@@ -99,18 +149,33 @@ const VehiculeList = () => {
                       width : '85%'
                     }}
                   />
-                    <TouchableOpacity onPress={()=> setModalVisible(!isModalVisible)}>
+                    <TouchableOpacity onPress={()=>{
+                      setModalVisible(!isModalVisible)
+                      Keyboard.dismiss()
+                      } }>
                     <AntDesign name="filter" size={54} color={style.secondary} />
                     </TouchableOpacity>
                       </View>
                   
 <ScrollView style={{flex : 1}}>
 
- 
+
+                    {(searchQuery == '' && priceQuery == 5000000 && categoryQuery == 'Tous' && seatsQuery == 50) && (
+                      <>
+                                    <View style={{marginTop : 20 , width : '100%' , height : 400}}>
+                                    <ImageBackground source={{uri : 'https://digestcars.com/wp-content/uploads/2019/10/rent-a-car.jpg'}} style={{flex : 1 , alignItems :'center', justifyContent :'center'}} >
+                                    <Text  style={{color : 'white' , fontWeight : 'bold' , fontSize : 35, fontStyle : 'italic'}} >Roulez avec simplicité et style</Text>
+                                    </ImageBackground>
+                                </View>
+                               <PopularVehicle/>
+                                </>
+                    )}
+
+
                 {
                   vehicule.map(item => {
                     return (
-                      <TouchableOpacity key={item._id} activeOpacity={0.9} >
+                      <TouchableOpacity key={item._id} activeOpacity={0.9} onPress={() => handleReservationForm(item._id)} >
                         <View style={styles.vehiculeContainer}  >
                         <Text style={{color : style.secondary, position : 'absolute', top : 5 , right : 5,}}>{item.rent? <MaterialIcons name="car-rental" size={24} color={style.secondary} /> : ''}</Text>
                           <View style={{marginRight : 10}}>
@@ -188,12 +253,14 @@ const VehiculeList = () => {
       </Modal>
 
 
-        {error && (
-            <PaperProvider>
-            <Portal>
+
+          </SafeAreaView>
+          {error && (
+            <PaperProvider >
+            <Portal >   
               <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
                 <Text>Session expire !!!</Text>
-                <Button onPress={()=> navigation.replace(ROUTES.loginScreen)} >
+                <Button onPress={hideModal} >
                   <Text>Revenir sur la page de connexion</Text>
                 </Button>
               </Modal>
@@ -208,6 +275,10 @@ const VehiculeList = () => {
 export default VehiculeList
 
 const styles = StyleSheet.create({
+  safeView : {
+    flex : 1, 
+    paddingTop : Platform.OS === 'android' ? StatusBar.currentHeight : 0
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -236,5 +307,5 @@ const styles = StyleSheet.create({
       elevation: 6, // Cela ajoute une ombre en utilisant l'élévation (fonctionne sur Android)
       flexDirection : 'row',
       alignItems : 'center'
-    }
+    },
 })
