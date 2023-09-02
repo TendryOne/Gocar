@@ -9,7 +9,9 @@ export const ROUTES = {
     vehiculeList : 'VehiculeList',
     profile : 'Profile',
     map : 'Map',
+    VehiculeDetails : 'VehiculeDetails',
+    Vehicle : 'Vehicle',
     reservationForm : 'ReservationForm',
-    Vehicle : 'Vehicle'
+    reservationDetails : 'ReservationDetails'
 
 }

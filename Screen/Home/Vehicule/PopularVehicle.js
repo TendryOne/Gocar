@@ -34,7 +34,7 @@ pagingEnabled
 showsHorizontalScrollIndicator={false}
 renderItem={({ item }) => (
 <View style={styles.carouselItem}>
-    <Text style={{ position : 'absolute' , top : 5 , left : 5 , backgroundColor : style.secondary, fontWeight : 'bold' , borderRadius : 10 , padding : 3 }}>Nouveau</Text>
+    <Text style={{ position : 'absolute' , top : 5 , left : 5 , backgroundColor : style.error, fontWeight : 'bold' , borderRadius : 10 , padding : 3 }}>Nouveau</Text>
     <Image source={{uri : item.image}} style={{width : 150 , height : 150, resizeMode : 'contain'}} />
     <Text style={{ fontWeight : 'bold'}}>{item.brand} {item.model}</Text>
     <Text style={{ color : style.secondary}}>Ar {item.price.toLocaleString()}</Text>

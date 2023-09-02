@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity, ImageBackg
 import React, { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Portal, PaperProvider, Button, Searchbar , RadioButton, Modal} from 'react-native-paper'
+import { Portal, PaperProvider, Button, Searchbar , RadioButton, Modal, Snackbar} from 'react-native-paper'
 import { useNavigation } from '@react-navigation/native'
 import { ROUTES } from '../../../routes'
 import { style } from '../../../styles'
@@ -14,12 +14,17 @@ import PopularVehicle from './PopularVehicle'
 const VehiculeList = () => {
     const [isModalVisible, setModalVisible] = useState(false)
     const [visible, setVisible] = useState(true);
+    const [visibleSnack, setVisibleSnack] = useState(false)
     const navigation = useNavigation()
     const [vehicule , setVehicule] = useState([])
     const [searchQuery , SetSearchQuery] = useState('')
     const [priceQuery , setPriceQuery] = useState(5000000)
     const [seatsQuery, setSeatsQuery] = useState(50)
     const [categoryQuery , setCategoryQuery] = useState('Tous')
+    const [showSearch , setShowSearch] = useState(true)
+    const [prevScrollOffset, setPrevScrollOffset] = useState(0);
+    const onDismissSnackBar = () => setVisibleSnack(false);
+    
 
     
     
@@ -100,18 +105,33 @@ const VehiculeList = () => {
     }, [searchQuery, priceQuery, seatsQuery, categoryQuery])
 
 
-    const handleReservationForm = (id)=>{
-        const VehiculeToRent = vehicule.filter(vehicule => vehicule._id === id)
-      navigation.navigate(ROUTES.reservationForm, VehiculeToRent)
+    const handleVehiculeDetails = (item)=>{
+      if(item.rent){
+        setVisibleSnack(true)
+      }else{    
+      navigation.navigate(ROUTES.VehiculeDetails, item)
+      }
+
     }
 
+    const handleScroll = (event) => {
+      const offsetY = event.nativeEvent.contentOffset.y;
+    
+      if (offsetY > 50 && offsetY  > prevScrollOffset ) {
+        setShowSearch(false); // L'utilisateur fait défiler vers le bas, masquer la section
+      } else {
+        setShowSearch(true); // L'utilisateur fait défiler vers le haut, afficher la section
+      }
+
+      setPrevScrollOffset(offsetY)
+    }
 
   return (
     <>
 
   <SafeAreaView style={!error ? styles.safeView : ""}>
     {
-      !error && (
+      (!error && showSearch) && (
         <View style={{flexDirection : 'row', justifyContent : 'space-between', padding : 10}}>
         <Pressable onPress={()=> navigation.openDrawer()}>
           <FontAwesome name="bars" size={24} color={style.primary} />
@@ -129,35 +149,42 @@ const VehiculeList = () => {
 
       {(searchQuery !== '' || priceQuery !== 5000000 || categoryQuery !== 'Tous' || seatsQuery !== 50) && (
                       <TouchableOpacity onPress={ResetFilter} style={{position : 'absolute' , zIndex : 1 , bottom : 30, right : 30 , backgroundColor : style.secondary , padding : 10 , borderRadius : 50}}>
-                      <MaterialCommunityIcons name="filter-off" size={30} color="black"  />
+                      <MaterialCommunityIcons name="filter-off" size={30} color="white"  />
                       </TouchableOpacity>
       )}
       
         
-                <View style={{flexDirection : 'row', alignItems : 'center'}}>
+                
 
+       
+          <View style={{flexDirection : 'row', alignItems : 'center' }}>
+          <Searchbar
+                    
+          placeholder='Chercher ici ...'
+          iconColor={style.secondary}
+          value={searchQuery}
+          onChangeText={(value)=> SetSearchQuery(value)}
+          style={{
+            marginTop : 10,
+            backgroundColor : 'white',
+            elevation : 5,
+            width : '85%',
+          }}
+        />
+        <TouchableOpacity onPress={()=>{
+          setModalVisible(!isModalVisible)
+          Keyboard.dismiss()
+          } }
+          >
+        <AntDesign name="filter" size={54} color={style.secondary} />
+        </TouchableOpacity>
+        </View>
 
-                    <Searchbar
-                    placeholder='Chercher ici ...'
-                    iconColor={style.secondary}
-                    value={searchQuery}
-                    onChangeText={(value)=> SetSearchQuery(value)}
-                    style={{
-                      marginTop : 10,
-                      backgroundColor : 'white',
-                      elevation : 5,
-                      width : '85%'
-                    }}
-                  />
-                    <TouchableOpacity onPress={()=>{
-                      setModalVisible(!isModalVisible)
-                      Keyboard.dismiss()
-                      } }>
-                    <AntDesign name="filter" size={54} color={style.secondary} />
-                    </TouchableOpacity>
-                      </View>
+                    
+    
+
                   
-<ScrollView style={{flex : 1}}>
+<ScrollView style={{flex : 1, paddingBottom : 100}} onScroll={handleScroll}>
 
 
                     {(searchQuery == '' && priceQuery == 5000000 && categoryQuery == 'Tous' && seatsQuery == 50) && (
@@ -175,15 +202,15 @@ const VehiculeList = () => {
                 {
                   vehicule.map(item => {
                     return (
-                      <TouchableOpacity key={item._id} activeOpacity={0.9} onPress={() => handleReservationForm(item._id)} >
+                      <TouchableOpacity key={item._id} activeOpacity={0.9} onPress={() => handleVehiculeDetails(item)} >
                         <View style={styles.vehiculeContainer}  >
-                        <Text style={{color : style.secondary, position : 'absolute', top : 5 , right : 5,}}>{item.rent? <MaterialIcons name="car-rental" size={24} color={style.secondary} /> : ''}</Text>
+                        <Text style={{color : style.secondary, position : 'absolute', top : 5 , right : 5,}}>{item.rent? <MaterialIcons name="car-rental" size={24} color={style.error} /> : ''}</Text>
                           <View style={{marginRight : 10}}>
                             <Image source={{uri : item.image}} style={{width : 100, height : 100 , resizeMode : 'contain'}}/>
                           </View>
                           <View>
                           <Text style={{fontWeight : 'bold'}}>{item.brand} {item.model}</Text>
-                          <Text style={{color : style.secondary}}>Ar {item.price.toLocaleString()}</Text>
+                          <Text style={{color : style.primary}}>Ar {item.price.toLocaleString()}</Text>
                           <View style={{flexDirection : 'row', alignItems :'center'}}>
                           <MaterialCommunityIcons name="seat-passenger" size={24} color="gray" />
                           <Text>{item.capacity}</Text>
@@ -191,10 +218,20 @@ const VehiculeList = () => {
                           </View>                        
                         </View>
                         </TouchableOpacity>
+                        
                     )
                   })
                 }      
                 </ScrollView>
+                <Snackbar
+                  visible={visibleSnack}
+                  onDismiss={onDismissSnackBar}
+                  duration={1000}
+                  action={{
+                    label: 'Masquer'
+                  }}>
+                  Vehicule Indisponible pour le moment. Veuillez reessayez plus tard
+                </Snackbar>
                </> 
                 )}
       <Modal

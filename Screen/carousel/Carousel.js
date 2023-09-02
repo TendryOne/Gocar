@@ -12,25 +12,25 @@ const List = [
     {
         id : 1,
         image : require('../../assets/adaptive-icon.png'),
-        text : "Bienvenue chez Go Car, votre destination de confiance pour la location de voitures exceptionnelles. Explorez notre flotte variée de véhicules modernes et confortables, prêts à vous emmener où vous le souhaitez.",
-        title : 'Go Car',
+        text : "Bienvenue chez KEE, votre destination de confiance pour la location de voitures exceptionnelles. Explorez notre flotte variée de véhicules modernes et confortables, prêts à vous emmener où vous le souhaitez.",
+        title : 'KEE',
     },
     {
         id : 2,
         image : require('../../public/images/security.jpg'),
-        text : "Votre sécurité est notre priorité absolue chez Go Car. Nous prenons des mesures rigoureuses pour assurer que chaque voiture que vous louez est soigneusement entretenue et nettoyée.",
+        text : "Votre sécurité est notre priorité absolue chez KEE. Nous prenons des mesures rigoureuses pour assurer que chaque voiture que vous louez est soigneusement entretenue et nettoyée.",
         title : "Voyages Securisé",
     },
     {
         id : 3,
         image : require('../../public/images/policy.jpg'),
-        text : "Chez Go Car, nous accordons une grande importance à la confidentialité de vos données personnelles. Vos informations sont traitées avec le plus grand respect et conformément aux réglementations en vigueur.",
+        text : "Chez KEE, nous accordons une grande importance à la confidentialité de vos données personnelles. Vos informations sont traitées avec le plus grand respect et conformément aux réglementations en vigueur.",
         title : "Confidentialité",
     },
     {
         id : 4,
         image : require('../../public/images/traveller.jpg'),
-        text :"Inscrivez vous sur Go Car dès maintenant et ouvrez la porte à une expérience incroyablement pratique et enrichissante !",
+        text :"Inscrivez vous sur KEE dès maintenant et ouvrez la porte à une expérience incroyablement pratique et enrichissante !",
         title : "Prêt à commencer ?"
 
     }
